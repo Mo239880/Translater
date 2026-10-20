@@ -3,36 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> 👸🏻小公主的魔法词典</title>
+    <title>词源魔法词典</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif; 
-            background: #ffe6f2; 
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif;
+            background: #ffe6f2;
             background-image: radial-gradient(#ffb6c1 1px, transparent 1px);
             background-size: 20px 20px;
-            color: #5a3d4d; 
-            display: flex; 
-            justify-content: center; 
-            padding: 30px 15px; 
+            color: #5a3d4d;
+            display: flex;
+            justify-content: center;
+            padding: 30px 15px;
             min-height: 100vh;
         }
-        .container { 
-            width: 100%; max-width: 800px; background: #ffffff; 
-            border-radius: 30px; box-shadow: 0 10px 30px rgba(255,105,180,0.3); 
+        .container {
+            width: 100%; max-width: 800px; background: #ffffff;
+            border-radius: 30px; box-shadow: 0 10px 30px rgba(255,105,180,0.3);
             padding: 30px; border: 4px solid #ffb6c1;
         }
-        h1 { text-align: center; color: #ff69b4; margin-bottom: 15px; font-size: 26px; text-shadow: 2px 2px 4px rgba(255,182,193,0.5); }
-        .search-box { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; justify-content: center; }
-        select { padding: 15px; font-size: 16px; border: 2px solid #ffb6c1; border-radius: 15px; background: #fff0f5; color: #d63384; font-weight: bold; outline: none; }
-        input { flex: 1; padding: 15px 20px; font-size: 18px; border: 2px solid #ffb6c1; border-radius: 15px; outline: none; min-width: 200px; background: #fffafa; }
-        button { padding: 15px 35px; font-size: 18px; font-weight: bold; color: white; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; border-radius: 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(255,105,180,0.4); }
-        button:hover { opacity: 0.9; }
-        .card { background: #fff9fb; border: 2px dashed #ffb6c1; border-radius: 20px; padding: 25px; display: none; margin-top: 20px; }
+        h1 {
+            text-align: center; color: #ff69b4; margin-bottom: 15px; font-size: 26px;
+        }
+        .search-box {
+            display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; justify-content: center;
+        }
+        select {
+            padding: 15px; font-size: 16px; border: 2px solid #ffb6c1; border-radius: 15px;
+            background: #fff0f5; color: #d63384; font-weight: bold; outline: none;
+        }
+        input {
+            flex: 1; padding: 15px 20px; font-size: 18px; border: 2px solid #ffb6c1;
+            border-radius: 15px; outline: none; min-width: 200px; background: #fffafa;
+        }
+        button {
+            padding: 15px 35px; font-size: 18px; font-weight: bold; color: white;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border: none; border-radius: 15px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255,105,180,0.4);
+        }
+        .card {
+            background: #fff9fb; border: 2px dashed #ffb6c1; border-radius: 20px;
+            padding: 25px; display: none; margin-top: 20px;
+        }
         .card.active { display: block; }
-        .card h3 { color: #d63384; margin-bottom: 15px; font-size: 18px; border-left: 5px solid #ff69b4; padding-left: 10px; }
-        .card p { line-height: 1.8; color: #6c4b5e; font-size: 16px; white-space: pre-wrap; }
-        .translation-tag { display: inline-block; background: #ffe6f2; color: #d63384; padding: 8px 15px; border-radius: 20px; margin: 5px; font-size: 15px; font-weight: bold; border: 1px solid #ffb6c1; }
+        .card h3 {
+            color: #d63384; margin-bottom: 15px; font-size: 18px;
+            border-left: 5px solid #ff69b4; padding-left: 10px;
+        }
+        .card p { line-height: 1.8; color: #6c4b5e; font-size: 16px; }
+        .translation-tag {
+            display: inline-block; background: #ffe6f2; color: #d63384;
+            padding: 8px 15px; border-radius: 20px; margin: 5px;
+            font-size: 15px; font-weight: bold; border: 1px solid #ffb6c1;
+        }
         .error-msg { color: #ff1493; text-align: center; font-size: 16px; margin-top: 20px; font-weight: bold; }
     </style>
 </head>
@@ -40,7 +64,6 @@
 
 <div class="container">
     <h1>👑 词源小公主的魔法词典 🎀</h1>
-    <p style="text-align: center; color: #ff69b4; margin-bottom: 20px; font-size: 14px;">✨ 输入你想知道的词语，魔法马上呈现 ✨</p>
     
     <div class="search-box">
         <select id="langSelect">
@@ -51,23 +74,23 @@
             <option value="ko">🇰🇷 韩语</option>
             <option value="ja">🇯🇵 日语</option>
         </select>
-        <input type="text" id="wordInput" placeholder="例如：casa, house, maison..." autocomplete="off">
-        <button onclick="searchEtymology()">🪄 施展魔法</button>
+        <input type="text" id="wordInput" placeholder="输入单词..." autocomplete="off">
+        <button id="searchBtn">🪄 施展魔法</button>
     </div>
 
     <div id="errorMsg" class="error-msg"></div>
 
     <div id="resultCard" class="card">
-        <h3>📖 词源的秘密 (Etymology)</h3>
+        <h3>📖 词源的秘密</h3>
         <p id="etymologyText" style="margin-bottom: 25px;"></p>
         
-        <h3>🌍 其他语言的奇妙叫法 (Translations)</h3>
+        <h3>🌍 其他语言的叫法</h3>
         <div id="translationsBox"></div>
     </div>
 </div>
 
 <script>
-    async function searchEtymology() {
+    document.getElementById('searchBtn').addEventListener('click', async function() {
         let word = document.getElementById('wordInput').value.trim().toLowerCase();
         let lang = document.getElementById('langSelect').value;
         
@@ -85,8 +108,7 @@
         }
 
         try {
-            // 抓取维基百科
-            let url = `https://${lang}.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(word)}&format=json&origin=*`;
+            let url = 'https://' + lang + '.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=' + encodeURIComponent(word) + '&format=json&origin=*';
             let response = await fetch(url);
             let data = await response.json();
 
@@ -94,14 +116,13 @@
             let pageId = Object.keys(pages)[0];
 
             if (pageId === "-1") {
-                errorMsg.innerText = `魔法书里找不到 "${word}" 这个词，请检查拼写或换个原形试试呢？`;
+                errorMsg.innerText = "找不到这个词哦，请检查拼写或换个原形。";
                 return;
             }
 
             let extract = pages[pageId].extract;
 
             if (extract) {
-                // 抓取词源
                 let etyMatch = extract.match(/(Etimologia|Etymology|Étymologie|Etymologie|語源|어원)[\s\S]{0,450}/i);
                 if (etyMatch) {
                     etymologyText.innerText = etyMatch[0].substring(0, 400) + "...";
@@ -109,7 +130,6 @@
                     etymologyText.innerText = "这本古籍里暂时没有记载它的词源呢。";
                 }
 
-                // 抓取翻译
                 let transMatch = extract.match(/(Translations|Traduzioni|Übersetzungen|Traductions|번역|翻訳)([\s\S]{0,800})/i);
                 let transHtml = "";
                 
@@ -120,7 +140,7 @@
                         line = line.trim();
                         if (line.length > 2 && count < 15 && line.includes(':')) {
                             let parts = line.split(':');
-                            transHtml += `<span class="translation-tag">🌸 <b>${parts[0]}</b>: ${parts[1]}</span>`;
+                            transHtml += '<span class="translation-tag">🌸 <b>' + parts[0] + '</b>: ' + parts[1] + '</span>';
                             count++;
                         }
                     });
@@ -129,7 +149,7 @@
                 if (transHtml) {
                     translationsBox.innerHTML = transHtml;
                 } else {
-                    translationsBox.innerHTML = "<span style='color:#ffb6c1'>暂时没有找到其他语言的奇妙叫法哦~</span>";
+                    translationsBox.innerHTML = "<span style='color:#ffb6c1'>暂时没有找到其他语言的叫法哦~</span>";
                 }
 
                 resultCard.classList.add('active');
@@ -140,10 +160,12 @@
         } catch (error) {
             errorMsg.innerText = "❌ 查询失败，请检查网络连接。";
         }
-    }
+    });
 
     document.getElementById('wordInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') searchEtymology();
+        if (e.key === 'Enter') {
+            document.getElementById('searchBtn').click();
+        }
     });
 </script>
 
