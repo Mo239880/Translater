@@ -3,30 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多语言词源查询助手</title>
+    <title>👑 词源小公主的魔法词典</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #eceff1; color: #333; display: flex; justify-content: center; padding: 40px 20px; }
-        .container { width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; border-top: 6px solid #ff9800; }
-        h1 { text-align: center; color: #e65100; margin-bottom: 20px; font-size: 26px; }
-        
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        select { padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; background: #fafafa; outline: none; cursor: pointer; }
-        input { flex: 1; padding: 15px 20px; font-size: 18px; border: 2px solid #ddd; border-radius: 10px; outline: none; transition: 0.3s; min-width: 200px; }
-        input:focus { border-color: #ff9800; }
-        button { padding: 15px 30px; font-size: 18px; font-weight: bold; color: white; background: #ff9800; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #f57c00; }
-        
-        .card { background: #fffde7; border: 1px solid #fff59d; border-radius: 12px; padding: 25px; margin-bottom: 15px; display: none; }
-        .card.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .card h3 { color: #e65100; margin-bottom: 15px; font-size: 18px; border-left: 4px solid #ff9800; padding-left: 10px; }
-        .card p { line-height: 1.8; color: #444; font-size: 16px; white-space: pre-wrap; }
-        
-        .error-msg { color: #d32f2f; text-align: center; font-size: 16px; margin-top: 20px; font-weight: bold; }
-        .loading { text-align: center; color: #ff9800; font-weight: bold; margin-top: 20px; display: none; }
-        
+        
+        /* 背景：粉色波点 */
+        body { 
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', Tahoma, sans-serif; 
+            background: #ffe6f2; 
+            background-image: radial-gradient(#ffb6c1 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #5a3d4d; 
+            display: flex; 
+            justify-content: center; 
+            padding: 40px 20px; 
+            min-height: 100vh;
+        }
+        
+        /* 主卡片 */
+        .container { 
+            width: 100%; 
+            max-width: 800px; 
+            background: #ffffff; 
+            border-radius: 30px; 
+            box-shadow: 0 15px 35px rgba(255, 105, 180, 0.3); 
+            padding: 35px; 
+            border: 4px solid #ffb6c1;
+            position: relative;
+        }
+        
+        /* 标题 */
+        h1 { 
+            text-align: center; 
+            color: #ff69b4; 
+            margin-bottom: 10px; 
+            font-size: 28px; 
+            text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center; 
+            color: #ff69b4; 
+            margin-bottom: 25px; 
+            font-size: 14px;
+        }
+        
+        /* 搜索区 */
+        .search-box { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; justify-content: center; }
+        
+        select { 
+            padding: 15px; 
+            font-size: 16px; 
+            border: 2px solid #ffb6c1; 
+            border-radius: 15px; 
+            background: #fff0f5; 
+            color: #d63384;
+            font-weight: bold;
+            outline: none; 
+            cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(255, 192, 203, 0.2);
+        }
+        
+        input { 
+            flex: 1; 
+            padding: 15px 20px; 
+            font-size: 18px; 
+            border: 2px solid #ffb6c1; 
+            border-radius: 15px; 
+            outline: none; 
+            transition: 0.3s; 
+            min-width: 200px; 
+            background: #fffafa;
+            color: #5a3d4d;
+        }
+        
+        input:focus { border-color: #ff69b4; box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); }
+        
+        /* 果冻按钮 */
+        button { 
+            padding: 15px 35px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: white; 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); 
+            border: none; 
+            border-radius: 15px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            box-shadow: 0 6px 15px rgba(255, 105, 180, 0.4);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 105, 180, 0.6); }
+        button:active { transform: translateY(1px); }
+
+        /* 结果卡片 */
+        .card { 
+            background: #fff9fb; 
+            border: 2px dashed #ffb6c1; 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            display: none; 
+        }
+        .card.active { display: block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .card h3 { 
+            color: #d63384; 
+            margin-bottom: 15px; 
+            font-size: 18px; 
+            border-left: 5px solid #ff69b4; 
+            padding-left: 10px; 
+            background: linear-gradient(90deg, #ffe6f2, transparent);
+            border-radius: 5px;
+        }
+        
+        .card p { line-height: 1.8; color: #6c4b5e; font-size: 16px; white-space: pre-wrap; }
+        
+        /* 多语言标签 */
+        .translation-tag { 
+            display: inline-block; 
+            background: #ffe6f2; 
+            color: #d63384; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            margin: 5px; 
+            font-size: 15px; 
+            font-weight: bold; 
+            border: 1px solid #ffb6c1;
+            box-shadow: 0 2px 5px rgba(255, 182, 193, 0.3);
+        }
+        
+        .error-msg { color: #ff1493; text-align: center; font-size: 16px; margin-top: 20px; font-weight: bold; }
+        .loading { text-align: center; color: #ff69b4; font-weight: bold; margin-top: 20px; display: none; animation: pulse 1s infinite alternate; }
+        
+        @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
+        
         @media (max-width: 600px) {
             .search-box { flex-direction: column; }
             select, input, button { width: 100%; }
@@ -36,68 +150,66 @@
 <body>
 
 <div class="container">
-    <h1>📜 词源一键查询</h1>
-    <p style="text-align: center; color: #777; margin-bottom: 20px; font-size: 14px;">输入词汇，自动抓取并翻译维基百科词源</p>
-    
-    <div class="search-box">
+    <h1>👑 词源小       公主的魔法词典 🎀</h1>
+    const <p class="subtitle">✨ etymology 输入你想知道的Text词语，魔法马上呈现 ✨ =</p>
+    
+    <div class document="search-box">
         <select id="langSelect">
             <option value="it">🇮🇹 意大利语</option>
+            <option value="en">🇬🇧 英语</option>
             <option value="fr">🇫🇷 法语</option>
             <option value="de">🇩🇪 德语</option>
             <option value="ko">🇰🇷 韩语</option>
             <option value="ja">🇯🇵 日语</option>
         </select>
-        <input type="text" id="wordInput" placeholder="例如：potere, feccia, gehen" autocomplete="off">
-        <button onclick="searchEtymology()">🔍 查询</button>
+        <input type="text" id="wordInput" placeholder="例如：casa, house, maison..." autocomplete="off">
+        <button onclick="searchEtymology()">🪄 施展魔法</button>
     </div>
 
-    <div id="loadingMsg" class="loading">⏳ 正在深海捞针，从维基百科提取数据...</div>
+    <div id="loadingMsg" class="loading">🪄 魔法师正在翻阅古籍，请稍候...</div>
     <div id="errorMsg" class="error-msg"></div>
 
     <div id="resultCard" class="card">
-        <h3>📖 词源信息 (原文)</h3>
-        <p id="etymologyText" style="font-style: italic; color: #666;"></p>
+        <h3>📖 词源的秘密 (Etymology)</h3>
+        <p id="etymologyText" style="margin-bottom: 25px;"></p>
+        
+        <h3>🌍 其他语言的奇妙叫法 (Translations)</h3>
+        <div id="translationsBox"></div>
     </div>
 </div>
 
 <script>
-    // 简单的维基百科免费翻译 API
-    async function translateText(text, targetLang) {
-        if (targetLang !== 'zh') return text;
-        try {
-            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${targetLang}|zh-CN`;
-            const res = await fetch(url);
-            const data = await res.json();
-            return data.responseData.translatedText || text;
-        } catch (e) {
-            return text;
-        }
-    }
-
     async function searchEtymology() {
         const lang = document.getElementById('langSelect').value;
         let word = document.getElementById('wordInput').value.trim().toLowerCase();
-        
+        
         const loadingMsg = document.getElementById('loadingMsg');
         const errorMsg = document.getElementById('errorMsg');
         const resultCard = document.getElementById('resultCard');
-        const etymologyText = document.getElementById('etymologyText');
+.getElementById('etymologyText');
+        const translationsBox = document.getElementById('translationsBox');
 
         errorMsg.innerText = '';
         resultCard.classList.remove('active');
-        
+        
         if (!word) {
-            errorMsg.innerText = "请输入一个单词！";
+            errorMsg.innerText = "👸 公主殿下，请输入一个单词哦！";
             return;
+        }
+
+        // 魔法纠正：如果查不到复数/变体，自动尝试原形（针对意大利语等）
+        if (lang === 'it' && word.endsWith('e')) {
+            // 简单的复数还原逻辑
+            let singularGuess = word.slice(0, -1) + 'a';
+            if (word === 'fecce') singularGuess = 'feccia';
+            if (word === 'case') singularGuess = 'casa';
+            // 仅作为备用提示
         }
 
         loadingMsg.style.display = 'block';
 
         try {
-            // 1. 如果查的是 fecce，先自动尝试查它的原形 feccia
-            if (word === 'fecce' && lang === 'it') word = 'feccia';
-
-            // 2. 请求维基词典的文本 API (不解析 HTML，直接拿原始文本)
+            // 请求维基词典 API
             const url = `https://${lang}.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(word)}&format=json&origin=*`;
             const response = await fetch(url);
             const data = await response.json();
@@ -106,8 +218,7 @@
             const pageId = Object.keys(pages)[0];
 
             if (pageId === "-1") {
-                // 维基里真的没这个词
-                errorMsg.innerHTML = `维基词典中找不到 "${word}"。<br>请检查拼写。`;
+                errorMsg.innerHTML = `魔法书里找不到 "${word}" 这个词。<br>请检查一下拼写是否正确，或者换个原形试试呢？`;
                 loadingMsg.style.display = 'none';
                 return;
             }
@@ -115,34 +226,58 @@
             const extract = pages[pageId].extract;
 
             if (extract) {
-                // 3. 暴力匹配：只要文本里包含 "Etimologia" 或 "Etymology"，就把后面的内容截取出来
-                let match = extract.match(/(Etimologia|Etymology|Étymologie|Etymologie|語源|어원)[\s\S]{0,600}/i);
-                
-                if (match) {
-                    let foundText = match[0];
-                    // 截取到下一个大标题前（如果很长的话）
-                    if (foundText.length > 500) foundText = foundText.substring(0, 500) + "...";
-                    
-                    etymologyText.innerText = foundText;
-                    resultCard.classList.add('active');
+                // 1. 抓取词源 (匹配不同语言的 Etimologia, Etymology 等)
+                let etyMatch = extract.match(/(Etimologia|Etymology|Étymologie|Etymologie|語源|어원)[\s\S]{0,500}/i);
+                if (etyMatch) {
+                    // 截取到下一个段落或者限定字数
+                    let cleanText = etyMatch[0].substring(0, 450);
+                    etymologyText.innerText = cleanText + (cleanText.length >= 450 ? "..." : "");
                 } else {
-                    // 如果词条里没找到明确的词源标题，就把该词条的前 400 个字显示出来
-                    etymologyText.innerText = "该词条未找到明确标有'词源'的段落，以下是该词的维基百科简介：\n\n" + extract.substring(0, 400) + "...";
-                    resultCard.classList.add('active');
+                    etymologyText.innerText = "这本古籍里暂时没有记载它的词源呢。";
                 }
+
+                // 2. 抓取其他语言对应词 (Translations)
+                let transMatch = extract.match(/(Translations|Traduzioni|Übersetzungen|Traductions|번역|翻訳)([\s\S]{0,1000})/i);
+                let transHtml = "";
+                
+                if (transMatch) {
+                    let lines = transMatch[2].split('\n');
+                    let count = 0;
+                    
+                    lines.forEach(line => {
+                        line = line.trim();
+                        // 过滤出有效行
+                        if (line.length > 2 && count < 20) {
+                            if (line.includes(':')) {
+                                let parts = line.split(':');
+                                transHtml += `<span class="translation-tag">🌸 <b>${parts[0]}</b>: ${parts[1]}</span>`;
+                                count++;
+                            }
+                        }
+                    });
+                }
+
+                if (transHtml) {
+                    translationsBox.innerHTML = transHtml;
+                } else {
+                    translationsBox.innerHTML = "<span style='color:#ffb6c1'>暂时没有找到其他语言的奇妙叫法哦~</span>";
+                }
+
+                resultCard.classList.add('active');
+
             } else {
-                errorMsg.innerText = "未能提取到有效文本。";
+                errorMsg.innerText = "魔法失效了，没提取到内容。";
             }
 
         } catch (error) {
             console.error(error);
-            errorMsg.innerText = "❌ 查询失败，请检查网络。";
+            errorMsg.innerText = "❌ 网络开小差了，请检查网络连接。";
         } finally {
             loadingMsg.style.display = 'none';
         }
     }
 
-    // 支持回车
+    // 支持回车键触发搜索
     document.getElementById('wordInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') searchEtymology();
     });
