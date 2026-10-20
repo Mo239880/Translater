@@ -3,47 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多语言词源小助手</title>
+    <title>多语言词源查询助手</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #eceff1; color: #333; display: flex; justify-content: center; padding: 40px 20px; }
-        .container { width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; border-top: 6px solid #3f51b5; }
-        h1 { text-align: center; color: #1a237e; margin-bottom: 20px; font-size: 26px; }
+        .container { width: 100%; max-width: 800px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; border-top: 6px solid #ff9800; }
+        h1 { text-align: center; color: #e65100; margin-bottom: 20px; font-size: 26px; }
         
         .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         select { padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; background: #fafafa; outline: none; cursor: pointer; }
         input { flex: 1; padding: 15px 20px; font-size: 18px; border: 2px solid #ddd; border-radius: 10px; outline: none; transition: 0.3s; min-width: 200px; }
-        input:focus { border-color: #3f51b5; }
-        button { padding: 15px 30px; font-size: 18px; font-weight: bold; color: white; background: #3f51b5; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #303f9f; }
+        input:focus { border-color: #ff9800; }
+        button { padding: 15px 30px; font-size: 18px; font-weight: bold; color: white; background: #ff9800; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #f57c00; }
         
-        .result-section { display: none; }
-        .result-section.active { display: block; animation: fadeIn 0.4s; }
+        .card { background: #fffde7; border: 1px solid #fff59d; border-radius: 12px; padding: 25px; margin-bottom: 15px; display: none; }
+        .card.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: #fcfcfc; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .card h3 { color: #3f51b5; margin-bottom: 10px; font-size: 18px; border-left: 4px solid #3f51b5; padding-left: 10px; }
-        .card p { line-height: 1.6; color: #555; font-size: 15px; }
         
-        .conjugation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .conjugation-item { background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-size: 15px; }
-        .conjugation-item strong { color: #d32f2f; }
+        .card h3 { color: #e65100; margin-bottom: 15px; font-size: 18px; border-left: 4px solid #ff9800; padding-left: 10px; }
+        .card p { line-height: 1.8; color: #444; font-size: 16px; white-space: pre-wrap; }
         
-        .tag { display: inline-block; background: #e8eaf6; color: #283593; padding: 5px 12px; border-radius: 20px; margin: 5px 5px 0 0; font-size: 14px; font-weight: 500; }
-        .error-msg { color: #d32f2f; text-align: center; font-size: 16px; margin-top: 20px; }
+        .error-msg { color: #d32f2f; text-align: center; font-size: 16px; margin-top: 20px; font-weight: bold; }
+        .loading { text-align: center; color: #ff9800; font-weight: bold; margin-top: 20px; display: none; }
         
         @media (max-width: 600px) {
             .search-box { flex-direction: column; }
             select, input, button { width: 100%; }
-            .conjugation-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📚 多语言词源小助手</h1>
-    <p style="text-align: center; color: #777; margin-bottom: 20px; font-size: 14px;">支持查词（目前内置测试词汇如下）</p>
+    <h1>📜 词源一键查询</h1>
+    <p style="text-align: center; color: #777; margin-bottom: 20px; font-size: 14px;">输入任意词汇，实时联网抓取全球维基词典数据</p>
     
     <div class="search-box">
         <select id="langSelect">
@@ -53,147 +47,93 @@
             <option value="ko">🇰🇷 韩语</option>
             <option value="ja">🇯🇵 日语</option>
         </select>
-        <input type="text" id="wordInput" placeholder="输入要查询的单词..." autocomplete="off">
-        <button onclick="searchWord()">🔍 查询</button>
+        <input type="text" id="wordInput" placeholder="例如：fecce, gehen, maison, たべる" autocomplete="off">
+        <button onclick="searchEtymology()">🔍 查询</button>
     </div>
 
+    <div id="loadingMsg" class="loading">⏳ 正在连接全球词库，请稍候...</div>
     <div id="errorMsg" class="error-msg"></div>
 
-    <div id="resultSection" class="result-section">
-        <div class="card">
-            <h3>📖 词源 (Etymology)</h3>
-            <p id="resultEtymology"></p>
-        </div>
-        <div class="card">
-            <h3>🔄 变位/形态 (Forms)</h3>
-            <div id="resultConjugation" class="conjugation-grid"></div>
-        </div>
-        <div class="card">
-            <h3>🌱 同源词/相关词 (Related Words)</h3>
-            <div id="resultRelated"></div>
-        </div>
+    <div id="resultCard" class="card">
+        <h3>📖 词源信息 (Etymology)</h3>
+        <p id="etymologyText"></p>
     </div>
 </div>
 
 <script>
-    // ==========================================
-    // 📚 多语言词典数据库 (你可以在这里持续添加)
-    // ==========================================
-    const database = {
-        // --- 意大利语 ---
-        "it": {
-            "andare": {
-                etymology: "源自拉丁语 'ambitare'（四处走动），后演变为古意大利语 'andare'。",
-                conjugation: { "现在时": "io vado, tu vai, lui va, noi andiamo, voi andate, loro vanno", "过去分词": "andato" },
-                related: ["andamento (趋势)", "andata (去程)"]
-            },
-            "casa": {
-                etymology: "源自拉丁语 'casa'，原意为乡村茅屋，后指代家。",
-                conjugation: { "单数": "la casa", "复数": "le case" },
-                related: ["casalinga (家庭主妇)", "casello (收费站)"]
-            }
-        },
-        // --- 法语 ---
-        "fr": {
-            "aller": {
-                etymology: "源自拉丁语 'ambulare'（走动），经历了复杂的语音演变进入法语。",
-                conjugation: { "现在时": "je vais, tu vas, il va, nous allons, vous allez, ils vont", "简单将来时": "j'irai, tu iras..." },
-                related: ["allée (小径)", "aller-retour (往返)"]
-            },
-            "maison": {
-                etymology: "源自拉丁语 'mansio'（停留、住所），后来演变为法语中的房子。",
-                conjugation: { "单数": "la maison", "复数": "les maisons" },
-                related: ["maisonnette (小房子)", "ménage (家务)"]
-            }
-        },
-        // --- 德语 ---
-        "de": {
-            "gehen": {
-                etymology: "源自原始日耳曼语 'gān'，意为行走，与英语 'go' 同源。",
-                conjugation: { "现在时": "ich gehe, du gehst, er/sie geht, wir gehen, ihr geht, sie gehen", "过去分词": "gegangen" },
-                related: ["Gang (走廊/进程)", "Ausgang (出口)"]
-            },
-            "haus": {
-                etymology: "源自原始日耳曼语 'hūsą'，与英语 'house' 同源。",
-                conjugation: { "单数 (Nom)": "das Haus", "复数 (Nom)": "die Häuser" },
-                related: ["Häuschen (小房子)", "Haushalt (家庭)"]
-            }
-        },
-        // --- 韩语 ---
-        "ko": {
-            "가다": {
-                etymology: "固有词，无直接汉字词源，表示“去”。",
-                conjugation: { "格式体": "갑니다 (去)", "过去式": "갔다 (去了)", "连接形": "가서 (去了然后...)" },
-                related: ["가기 (去)", "가져가다 (拿走)"]
-            },
-            "먹다": {
-                etymology: "固有词，表示“吃”。",
-                conjugation: { "格式体": "먹습니다 (吃)", "过去式": "먹었다 (吃了)", "连接形": "먹어서 (吃了然后...)" },
-                related: ["음식 (食物)", "먹이 (饲料)"]
-            }
-        },
-        // --- 日语 ---
-        "ja": {
-            "たべる": {
-                etymology: "汉字写作「食べる」。词根可追溯至古语「たぶ」（赐予/食用）。",
-                conjugation: { "ます形": "食べます", "て形": "食べて", "可能形": "食べられる", "过去式": "食べた" },
-                related: ["食べ物 (食物)", "食堂 (餐厅)"]
-            },
-            "いく": {
-                etymology: "汉字写作「行く」。古语读作「いゆ」，表示移动。",
-                conjugation: { "ます形": "行きます", "て形": "行って", "过去式": "行った" },
-                related: ["行き (去程)", "行方 (下落/去向)"]
-            }
-        }
-    };
-
-    function searchWord() {
+    async function searchEtymology() {
         const lang = document.getElementById('langSelect').value;
-        const input = document.getElementById('wordInput').value.trim().toLowerCase();
-        const resultSection = document.getElementById('resultSection');
-        const errorMsg = document.getElementById('errorMsg');
+        const word = document.getElementById('wordInput').value.trim().toLowerCase();
         
-        errorMsg.innerText = '';
-        resultSection.classList.remove('active');
+        const loadingMsg = document.getElementById('loadingMsg');
+        const errorMsg = document.getElementById('errorMsg');
+        const resultCard = document.getElementById('resultCard');
+        const etymologyText = document.getElementById('etymologyText');
 
-        if (!input) {
+        // 清空旧状态
+        errorMsg.innerText = '';
+        resultCard.classList.remove('active');
+        
+        if (!word) {
             errorMsg.innerText = "请输入一个单词！";
             return;
         }
 
-        // 去对应的语言库里找
-        const data = database[lang] && database[lang][input];
+        loadingMsg.style.display = 'block';
 
-        if (data) {
-            document.getElementById('resultEtymology').innerText = data.etymology;
-            
-            let conjHtml = '';
-            for (const [key, value] of Object.entries(data.conjugation)) {
-                conjHtml += `<div class="conjugation-item"><strong>${key}:</strong><br>${value}</div>`;
+        try {
+            // 调用维基词典 API，获取指定语言的页面数据
+            const url = `https://${lang}.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&origin=*`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error("词库中找不到这个词");
             }
-            document.getElementById('resultConjugation').innerHTML = conjHtml;
-            
-            let relatedHtml = '';
-            data.related.forEach(word => {
-                relatedHtml += `<span class="tag">${word}</span>`;
-            });
-            document.getElementById('resultRelated').innerHTML = relatedHtml;
 
-            resultSection.classList.add('active');
-        } else {
-            let tips = "请尝试输入以下测试词：\n";
-            if(lang === 'it') tips += "andare, casa";
-            if(lang === 'fr') tips += "aller, maison";
-            if(lang === 'de') tips += "gehen, haus";
-            if(lang === 'ko') tips += "가다, 먹다";
-            if(lang === 'ja') tips += "たべる, いく";
-            errorMsg.innerText = `词库中暂无此词。\n${tips}`;
+            // 提取页面的原始文本
+            const wikitext = data.parse.wikitext['*'];
+            
+            // 使用正则表达式提取“词源”部分
+            // 维基词典的词源通常由 === Etimologia === (意) / === Etymology === (英/法) 等标记
+            let etymologyMatch = wikitext.match(/===\s*(Etimologia|Etymology|Étymologie|Etymologie|語源|어원)\s*===\n([\s\S]*?)(?=\n==|\n===|$)/i);
+
+            if (etymologyMatch && etymologyMatch[2]) {
+                let etymologyContent = etymologyMatch[2].trim();
+                
+                // 简单清理维基代码标记（比如去掉 [[ ]] 和 {{ }} 等干扰符号）
+                etymologyContent = etymologyContent
+                    .replace(/\[\[([^\]]+)\]\]/g, '$1') // 把 [[词]] 变成 词
+                    .replace(/\{\{[^}]+\}\}/g, '')      // 去掉模板代码
+                    .replace(/'''/g, '')                // 去掉加粗符号
+                    .replace(/''/g, '')                 // 去掉斜体符号
+                    .replace(/<[^>]+>/g, '')            // 去掉 HTML 标签
+                    .trim();
+
+                if (etymologyContent.length > 0) {
+                    etymologyText.innerText = etymologyContent;
+                    resultCard.classList.add('active');
+                } else {
+                    errorMsg.innerText = "找到了该词，但未提取到具体的词源描述。";
+                }
+            } else {
+                // 如果没找到词源部分，给出提示
+                errorMsg.innerText = "这个词在词库中存在，但暂无词源记载。";
+            }
+
+        } catch (error) {
+            console.error(error);
+            errorMsg.innerText = `查询失败：维基词典中未收录 "${word}" 的 ${lang.toUpperCase()} 语词条。`;
+        } finally {
+            loadingMsg.style.display = 'none';
         }
     }
 
-    // 回车搜索
+    // 支持按回车键
     document.getElementById('wordInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') searchWord();
+        if (e.key === 'Enter') {
+            searchEtymology();
+        }
     });
 </script>
 
