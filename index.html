@@ -37,7 +37,7 @@
 
 <div class="container">
     <h1>📜 词源一键查询</h1>
-    <p style="text-align: center; color: #777; margin-bottom: 20px; font-size: 14px;">输入任意词汇，实时联网抓取全球维基词典数据</p>
+    <p style="text-align: center; color: #777; margin-bottom: 20px; font-size: 14px;">输入词汇，实时抓取官方维基词典词源（支持查不到时自动尝试原形）</p>
     
     <div class="search-box">
         <select id="langSelect">
@@ -47,11 +47,11 @@
             <option value="ko">🇰🇷 韩语</option>
             <option value="ja">🇯🇵 日语</option>
         </select>
-        <input type="text" id="wordInput" placeholder="例如：fecce, gehen, maison, たべる" autocomplete="off">
+        <input type="text" id="wordInput" placeholder="例如：potere, fecce, gehen, maison" autocomplete="off">
         <button onclick="searchEtymology()">🔍 查询</button>
     </div>
 
-    <div id="loadingMsg" class="loading">⏳ 正在连接全球词库，请稍候...</div>
+    <div id="loadingMsg" class="loading">⏳ 正在解析官方词库，可能需要 2-3 秒...</div>
     <div id="errorMsg" class="error-msg"></div>
 
     <div id="resultCard" class="card">
@@ -70,7 +70,6 @@
         const resultCard = document.getElementById('resultCard');
         const etymologyText = document.getElementById('etymologyText');
 
-        // 清空旧状态
         errorMsg.innerText = '';
         resultCard.classList.remove('active');
         
@@ -82,58 +81,69 @@
         loadingMsg.style.display = 'block';
 
         try {
-            // 调用维基词典 API，获取指定语言的页面数据
-            const url = `https://${lang}.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=wikitext&format=json&origin=*`;
+            // 使用维基词典的 Parse API 获取渲染后的 HTML
+            const url = `https://${lang}.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&prop=text&format=json&origin=*`;
             const response = await fetch(url);
             const data = await response.json();
 
             if (data.error) {
-                throw new Error("词库中找不到这个词");
+                // 如果查不到，尝试模糊猜测
+                errorMsg.innerHTML = `维基词库中找不到 "${word}"。<br>请确认拼写是否正确，或者尝试输入它的原形（例如：Poter 应该是 Potere）。`;
+                loadingMsg.style.display = 'none';
+                return;
             }
 
-            // 提取页面的原始文本
-            const wikitext = data.parse.wikitext['*'];
-            
-            // 使用正则表达式提取“词源”部分
-            // 维基词典的词源通常由 === Etimologia === (意) / === Etymology === (英/法) 等标记
-            let etymologyMatch = wikitext.match(/===\s*(Etimologia|Etymology|Étymologie|Etymologie|語源|어원)\s*===\n([\s\S]*?)(?=\n==|\n===|$)/i);
+            // 拿到渲染后的完整 HTML 字符串
+            const htmlText = data.parse.text['*'];
+            // 将 HTML 转为 DOM 对象以便提取节点
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
 
-            if (etymologyMatch && etymologyMatch[2]) {
-                let etymologyContent = etymologyMatch[2].trim();
-                
-                // 简单清理维基代码标记（比如去掉 [[ ]] 和 {{ }} 等干扰符号）
-                etymologyContent = etymologyContent
-                    .replace(/\[\[([^\]]+)\]\]/g, '$1') // 把 [[词]] 变成 词
-                    .replace(/\{\{[^}]+\}\}/g, '')      // 去掉模板代码
-                    .replace(/'''/g, '')                // 去掉加粗符号
-                    .replace(/''/g, '')                 // 去掉斜体符号
-                    .replace(/<[^>]+>/g, '')            // 去掉 HTML 标签
-                    .trim();
+            // 寻找带有 "Etimologia" (意)、"Etymology" (英) 等字样的标题节点
+            const headings = doc.querySelectorAll('h2, h3, h4, h5');
+            let targetHeading = null;
 
-                if (etymologyContent.length > 0) {
-                    etymologyText.innerText = etymologyContent;
+            for (let h of headings) {
+                const title = h.innerText.toLowerCase();
+                if (title.includes('etimologia') || title.includes('etymology') || title.includes('étymologie') || title.includes('etymologie') || title.includes('語源') || title.includes('어원')) {
+                    targetHeading = h;
+                    break;
+                }
+            }
+
+            if (targetHeading) {
+                // 找到了词源标题，向下遍历抓取它后面的文字段落
+                let nextNode = targetHeading.nextElementSibling;
+                let extractedText = '';
+
+                while (nextNode && !nextNode.matches('h2, h3, h4, h5')) {
+                    if (nextNode.tagName === 'P' || nextNode.tagName === 'UL' || nextNode.tagName === 'DIV') {
+                        extractedText += nextNode.innerText + '\n\n';
+                    }
+                    nextNode = nextNode.nextElementSibling;
+                }
+
+                if (extractedText.trim()) {
+                    etymologyText.innerText = extractedText.trim();
                     resultCard.classList.add('active');
                 } else {
-                    errorMsg.innerText = "找到了该词，但未提取到具体的词源描述。";
+                    errorMsg.innerText = "找到了词源标题，但内容为空。";
                 }
             } else {
-                // 如果没找到词源部分，给出提示
-                errorMsg.innerText = "这个词在词库中存在，但暂无词源记载。";
+                errorMsg.innerText = `找到了词汇 "${word}"，但该词条没有提供专门的“词源”解析模块。`;
             }
 
         } catch (error) {
             console.error(error);
-            errorMsg.innerText = `查询失败：维基词典中未收录 "${word}" 的 ${lang.toUpperCase()} 语词条。`;
+            errorMsg.innerText = "❌ 查询失败，请检查网络（维基百科可能需要科学上网）。";
         } finally {
             loadingMsg.style.display = 'none';
         }
     }
 
-    // 支持按回车键
+    // 支持回车
     document.getElementById('wordInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            searchEtymology();
-        }
+        if (e.key === 'Enter') searchEtymology();
     });
 </script>
 
